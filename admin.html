@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDY — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --white: #f5f0eb;
+    --cream: #e8e0d5;
+    --wind: #c8a97e;
+    --wind-light: #e2c9a0;
+    --wind-dark: #8a6f4e;
+    --accent: #d4a853;
+    --gray: #141414;
+    --gray-2: #1e1e1e;
+    --gray-light: #2a2a2a;
+    --text-muted: #777;
+    --red: #c0392b;
+    --green: #27ae60;
+    --yellow: #f39c12;
+    --sidebar-w: 260px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--gray);
+    border-right: 1px solid rgba(200,169,126,0.1);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 28px 24px;
+    border-bottom: 1px solid rgba(200,169,126,0.1);
+  }
+  .sidebar-logo h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.7rem;
+    letter-spacing: 5px;
+    color: var(--white);
+  }
+  .sidebar-logo h1 span { color: var(--wind); }
+  .sidebar-logo p {
+    font-size: 0.68rem;
+    letter-spacing: 3px;
+    color: var(--wind-dark);
+    text-transform: uppercase;
+    margin-top: 2px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+  }
+  .nav-section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 10px 24px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 24px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.88rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.03); }
+  .nav-item.active { color: var(--wind); border-left-color: var(--wind); background: rgba(200,169,126,0.06); }
+  .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 20px 24px;
+    border-top: 1px solid rgba(200,169,126,0.1);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .sidebar-footer a {
+    color: var(--wind);
+    text-decoration: none;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* MAIN */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: rgba(8,8,8,0.95);
+    border-bottom: 1px solid rgba(200,169,126,0.1);
+    padding: 18px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .admin-badge {
+    background: rgba(200,169,126,0.1);
+    border: 1px solid rgba(200,169,126,0.3);
+    color: var(--wind);
+    padding: 6px 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 36px;
+    flex: 1;
+  }
+
+  /* PAGE SECTIONS */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 36px;
+  }
+  .stat-card {
+    background: var(--gray-2);
+    border: 1px solid rgba(200,169,126,0.1);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--wind);
+  }
+  .stat-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 2px;
+    color: var(--white);
+  }
+  .stat-sub {
+    font-size: 0.75rem;
+    color: var(--green);
+    margin-top: 4px;
+  }
+  .stat-icon {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 1.6rem;
+    opacity: 0.15;
+  }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--gray-2);
+    border: 1px solid rgba(200,169,126,0.1);
+    overflow: hidden;
+  }
+  .table-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(200,169,126,0.1);
+  }
+  .table-head h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+  .table-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-sm {
+    background: rgba(200,169,126,0.1);
+    border: 1px solid rgba(200,169,126,0.3);
+    color: var(--wind);
+    padding: 8px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-sm:hover { background: var(--wind); color: var(--black); }
+  .btn-danger {
+    background: rgba(192,57,43,0.1);
+    border: 1px solid rgba(192,57,43,0.3);
+    color: var(--red);
+  }
+  .btn-danger:hover { background: var(--red); color: var(--white); }
+
+  /* SEARCH / FILTER */
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(200,169,126,0.06);
+    background: rgba(255,255,255,0.02);
+  }
+  .search-input {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(200,169,126,0.2);
+    color: var(--white);
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+  }
+  .search-input:focus { border-color: var(--wind); }
+  .filter-select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(200,169,126,0.2);
+    color: var(--white);
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    outline: none;
+    cursor: pointer;
+  }
+  .filter-select option { background: #1e1e1e; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+  }
+  thead tr {
+    background: rgba(200,169,126,0.04);
+    border-bottom: 1px solid rgba(200,169,126,0.1);
+  }
+  th {
+    padding: 14px 16px;
+    text-align: left;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.2s;
+  }
+  tbody tr:hover { background: rgba(200,169,126,0.03); }
+  td { padding: 14px 16px; color: var(--cream); vertical-align: middle; }
+  td .mono {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    color: var(--wind);
+    letter-spacing: 1px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .status-Pending { background: rgba(243,156,18,0.15); color: var(--yellow); border: 1px solid rgba(243,156,18,0.3); }
+  .status-Processing { background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid rgba(52,152,219,0.3); }
+  .status-Shipped { background: rgba(200,169,126,0.15); color: var(--wind); border: 1px solid rgba(200,169,126,0.3); }
+  .status-Delivered { background: rgba(39,174,96,0.15); color: var(--green); border: 1px solid rgba(39,174,96,0.3); }
+  .status-Cancelled { background: rgba(192,57,43,0.15); color: var(--red); border: 1px solid rgba(192,57,43,0.3); }
+
+  .action-btns { display: flex; gap: 6px; }
+  .icon-btn {
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-btn:hover { border-color: var(--wind); color: var(--wind); background: rgba(200,169,126,0.1); }
+  .icon-btn.del:hover { border-color: var(--red); color: var(--red); background: rgba(192,57,43,0.1); }
+
+  /* STATUS CHANGE */
+  .status-select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(200,169,126,0.2);
+    color: var(--white);
+    padding: 4px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    outline: none;
+    cursor: pointer;
+  }
+  .status-select option { background: #1e1e1e; }
+
+  /* ORDER DETAIL MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 9100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: #111;
+    border: 1px solid rgba(200,169,126,0.2);
+    width: 90%;
+    max-width: 620px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 36px;
+    transform: translateY(20px);
+    transition: transform 0.3s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 4px;
+    color: var(--wind);
+    margin-bottom: 24px;
+  }
+  .detail-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding-bottom: 14px;
+  }
+  .detail-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    min-width: 130px;
+  }
+  .detail-value { font-size: 0.88rem; color: var(--cream); }
+  .close-modal-btn {
+    margin-top: 20px;
+    background: rgba(200,169,126,0.1);
+    border: 1px solid var(--wind);
+    color: var(--wind);
+    padding: 10px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .close-modal-btn:hover { background: var(--wind); color: var(--black); }
+
+  /* SPREADSHEET PAGE */
+  .sheet-wrap {
+    overflow-x: auto;
+    background: var(--gray-2);
+    border: 1px solid rgba(200,169,126,0.1);
+  }
+  .sheet-table {
+    min-width: 1200px;
+  }
+  .sheet-table th {
+    background: rgba(200,169,126,0.1);
+    position: sticky;
+    top: 0;
+  }
+
+  /* DASHBOARD CHARTS */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 18px;
+    margin-top: 18px;
+  }
+  .chart-card {
+    background: var(--gray-2);
+    border: 1px solid rgba(200,169,126,0.1);
+    padding: 24px;
+  }
+  .chart-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .mini-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .bar-row { display: flex; align-items: center; gap: 12px; font-size: 0.8rem; }
+  .bar-label { min-width: 100px; color: var(--text-muted); }
+  .bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; }
+  .bar-fill { height: 100%; background: var(--wind); border-radius: 3px; transition: width 1s ease; }
+  .bar-val { min-width: 50px; text-align: right; color: var(--wind); font-family: 'Syne',sans-serif; font-weight: 700; font-size: 0.78rem; }
+
+  .status-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .breakdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border-left: 3px solid transparent;
+  }
+  .breakdown-row.pending { border-left-color: var(--yellow); }
+  .breakdown-row.processing { border-left-color: #3498db; }
+  .breakdown-row.shipped { border-left-color: var(--wind); }
+  .breakdown-row.delivered { border-left-color: var(--green); }
+  .breakdown-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+  }
+
+  /* RECENT ORDERS (dashboard) */
+  .recent-orders { margin-top: 18px; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    padding: 60px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 14px; opacity: 0.3; }
+  .empty-state p { font-family: 'Syne', sans-serif; letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; }
+
+  /* SETTINGS */
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .setting-card {
+    background: var(--gray-2);
+    border: 1px solid rgba(200,169,126,0.1);
+    padding: 24px;
+  }
+  .setting-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+    color: var(--wind);
+    text-transform: uppercase;
+  }
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.85rem;
+  }
+  .setting-val {
+    color: var(--wind);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 1px;
+  }
+  .coupon-list { margin-top: 10px; }
+  .coupon-tag {
+    display: inline-block;
+    margin: 4px;
+    padding: 4px 12px;
+    background: rgba(200,169,126,0.1);
+    border: 1px solid rgba(200,169,126,0.25);
+    color: var(--wind);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--wind);
+    color: var(--black);
+    padding: 12px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    z-index: 99999;
+    transform: translateY(80px);
+    transition: transform 0.4s;
+    opacity: 0;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 1024px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .dash-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .sidebar { width: 200px; }
+    .main { margin-left: 200px; }
+    .content { padding: 20px; }
+    .settings-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <h1>W<span>I</span>NDY</h1>
+    <p>Admin Panel</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">
+      <span class="icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('orders',this)">
+      <span class="icon">🛍️</span> Orders
+    </div>
+    <div class="nav-item" onclick="showPage('spreadsheet',this)">
+      <span class="icon">📋</span> Spreadsheet
+    </div>
+    <div class="nav-section-label">Store</div>
+    <div class="nav-item" onclick="showPage('reviews',this)">
+      <span class="icon">⭐</span> Reviews
+    </div>
+    <div class="nav-item" onclick="showPage('settings',this)">
+      <span class="icon">⚙️</span> Settings
+    </div>
+    <div class="nav-section-label">Quick</div>
+    <div class="nav-item" onclick="window.open('windy.html','_blank')">
+      <span class="icon">🌐</span> View Store
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div>windyclothinglk@gmail.com</div>
+    <div style="margin-top:6px;"><a href="windy.html">← Back to Store</a></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <h2 id="pageTitle">Dashboard</h2>
+    <div class="topbar-right">
+      <span id="topbarTime"></span>
+      <span class="admin-badge">Admin</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="dash-grid">
+        <div class="chart-card">
+          <h3>Revenue by Product</h3>
+          <div class="mini-bar" id="revenueChart"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Order Status</h3>
+          <div class="status-breakdown" id="statusBreakdown"></div>
+        </div>
+      </div>
+      <div class="recent-orders">
+        <div class="table-wrap" style="margin-top:18px;">
+          <div class="table-head">
+            <h3>Recent Orders</h3>
+            <button class="btn-sm" onclick="showPage('orders',document.querySelector('[onclick*=orders]'))">View All</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Ref</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="recentOrdersBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="page" id="page-orders">
+      <div class="table-wrap">
+        <div class="table-head">
+          <h3>All Orders</h3>
+          <div class="table-actions">
+            <button class="btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+            <button class="btn-sm btn-danger" onclick="clearOrders()">🗑 Clear All</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <input class="search-input" id="orderSearch" placeholder="🔍 Search by name, ref, email..." oninput="renderOrdersTable()">
+          <select class="filter-select" id="statusFilter" onchange="renderOrdersTable()">
+            <option value="">All Status</option>
+            <option>Pending</option>
+            <option>Processing</option>
+            <option>Shipped</option>
+            <option>Delivered</option>
+            <option>Cancelled</option>
+          </select>
+          <select class="filter-select" id="paymentFilter" onchange="renderOrdersTable()">
+            <option value="">All Payment</option>
+            <option>Cash on Delivery</option>
+            <option>Bank Transfer</option>
+            <option>Card Payment</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Ref</th><th>Date</th><th>Customer</th><th>Phone</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPREADSHEET -->
+    <div class="page" id="page-spreadsheet">
+      <div class="table-wrap">
+        <div class="table-head">
+          <h3>Orders Spreadsheet</h3>
+          <div class="table-actions">
+            <button class="btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+            <button class="btn-sm" onclick="renderAll()">↺ Refresh</button>
+          </div>
+        </div>
+        <div class="sheet-wrap">
+          <table class="sheet-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Order Ref</th><th>Date</th><th>Customer</th><th>Email</th><th>Phone</th><th>Address</th><th>Items</th><th>Subtotal</th><th>Discount</th><th>Shipping</th><th>Total</th><th>Coupon</th><th>Payment</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="spreadsheetBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="page" id="page-reviews">
+      <div class="table-wrap">
+        <div class="table-head">
+          <h3>Customer Reviews</h3>
+          <div class="table-actions">
+            <button class="btn-sm btn-danger" onclick="clearReviews()">🗑 Clear Reviews</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Rating</th><th>Review</th><th>Date</th><th>Action</th></tr>
+          </thead>
+          <tbody id="reviewsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="settings-grid">
+        <div class="setting-card">
+          <h3>Store Info</h3>
+          <div class="setting-row"><span>Brand</span><span class="setting-val">WINDY Clothing</span></div>
+          <div class="setting-row"><span>Email</span><span class="setting-val">windyclothinglk@gmail.com</span></div>
+          <div class="setting-row"><span>Country</span><span class="setting-val">Sri Lanka</span></div>
+          <div class="setting-row"><span>Currency</span><span class="setting-val">LKR</span></div>
+          <div class="setting-row"><span>Shipping Fee</span><span class="setting-val">LKR 300</span></div>
+        </div>
+        <div class="setting-card">
+          <h3>Active Coupon Codes</h3>
+          <div class="coupon-list">
+            <div class="coupon-tag">WINDY10 — 10% off</div>
+            <div class="coupon-tag">FLOW20 — 20% off</div>
+            <div class="coupon-tag">LAUNCH30 — 30% off</div>
+            <div class="coupon-tag">VIP50 — 50% off</div>
+          </div>
+        </div>
+        <div class="setting-card">
+          <h3>Payment Methods</h3>
+          <div class="setting-row"><span>Cash on Delivery</span><span class="setting-val" style="color:var(--green);">Active</span></div>
+          <div class="setting-row"><span>Bank Transfer</span><span class="setting-val" style="color:var(--green);">Active</span></div>
+          <div class="setting-row"><span>Card / Online</span><span class="setting-val" style="color:var(--green);">Active</span></div>
+        </div>
+        <div class="setting-card">
+          <h3>Bank Details</h3>
+          <div class="setting-row"><span>Bank</span><span class="setting-val">Bank of Ceylon</span></div>
+          <div class="setting-row"><span>Account</span><span class="setting-val">WINDY Clothing</span></div>
+          <div class="setting-row"><span>Acc No</span><span class="setting-val">8001234567</span></div>
+          <div class="setting-row"><span>Branch</span><span class="setting-val">Colombo</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <h3>Order Details</h3>
+    <div id="detailContent"></div>
+    <button class="close-modal-btn" onclick="document.getElementById('detailModal').classList.remove('open')">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== NAV ======
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  const titles = { dashboard:'Dashboard', orders:'Orders', spreadsheet:'Spreadsheet', reviews:'Reviews', settings:'Settings' };
+  document.getElementById('pageTitle').textContent = titles[id] || id;
+  renderAll();
+}
+
+// ====== TIME ======
+function updateTime() {
+  document.getElementById('topbarTime').textContent = new Date().toLocaleString('en-LK');
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// ====== DATA ======
+function getOrders() { return JSON.parse(localStorage.getItem('windyOrders') || '[]'); }
+function saveOrders(orders) { localStorage.setItem('windyOrders', JSON.stringify(orders)); }
+function getReviews() { return JSON.parse(localStorage.getItem('windyReviews') || '[]'); }
+
+// ====== DASHBOARD ======
+function renderDashboard() {
+  const orders = getOrders();
+  const totalRevenue = orders.reduce((s,o) => s + (o.total||0), 0);
+  const totalOrders = orders.length;
+  const pending = orders.filter(o => o.status === 'Pending').length;
+  const delivered = orders.filter(o => o.status === 'Delivered').length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value">LKR ${totalRevenue.toLocaleString()}</div>
+      <div class="stat-sub">All time</div>
+      <div class="stat-icon">💰</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-value">${totalOrders}</div>
+      <div class="stat-sub">All time</div>
+      <div class="stat-icon">📦</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Orders</div>
+      <div class="stat-value">${pending}</div>
+      <div class="stat-sub" style="color:var(--yellow);">Needs action</div>
+      <div class="stat-icon">⏳</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Delivered</div>
+      <div class="stat-value">${delivered}</div>
+      <div class="stat-sub" style="color:var(--green);">Completed</div>
+      <div class="stat-icon">✅</div>
+    </div>
+  `;
+
+  // Product revenue chart
+  const productRevenue = { 'T-Shirt': 0, 'Hoodie': 0, 'Cap': 0, 'Jogger': 0 };
+  orders.forEach(o => {
+    if (o.items) {
+      const items = o.items.split(';');
+      items.forEach(item => {
+        if (item.toLowerCase().includes('tee') || item.toLowerCase().includes('shirt')) productRevenue['T-Shirt'] += 100;
+        else if (item.toLowerCase().includes('hoodie')) productRevenue['Hoodie'] += 100;
+        else if (item.toLowerCase().includes('cap')) productRevenue['Cap'] += 100;
+        else if (item.toLowerCase().includes('jogger')) productRevenue['Jogger'] += 100;
+      });
+    }
+  });
+  const maxRev = Math.max(...Object.values(productRevenue), 1);
+  document.getElementById('revenueChart').innerHTML = Object.entries(productRevenue).map(([k,v]) => `
+    <div class="bar-row">
+      <span class="bar-label">${k}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxRev*100)||5}%"></div></div>
+      <span class="bar-val">${v}</span>
+    </div>
+  `).join('');
+
+  const statuses = ['Pending','Processing','Shipped','Delivered','Cancelled'];
+  document.getElementById('statusBreakdown').innerHTML = statuses.map(s => {
+    const count = orders.filter(o => o.status === s).length;
+    return `
+      <div class="breakdown-row ${s.toLowerCase()}">
+        <span style="font-size:0.82rem;color:var(--text-muted)">${s}</span>
+        <span class="breakdown-count">${count}</span>
+      </div>
+    `;
+  }).join('');
+
+  const recent = orders.slice(0, 5);
+  document.getElementById('recentOrdersBody').innerHTML = recent.length ? recent.map(o => `
+    <tr>
+      <td><span class="mono">${o.ref}</span></td>
+      <td>${o.customer}</td>
+      <td style="color:var(--wind);font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:2px">LKR ${(o.total||0).toLocaleString()}</td>
+      <td><span style="font-size:0.8rem;color:var(--text-muted)">${o.payment||'—'}</span></td>
+      <td><span class="status-badge status-${o.status}">${o.status}</span></td>
+      <td style="font-size:0.78rem;color:var(--text-muted)">${o.date}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><p>No orders yet</p></div></td></tr>`;
+}
+
+// ====== ORDERS TABLE ======
+function renderOrdersTable() {
+  const orders = getOrders();
+  const search = (document.getElementById('orderSearch')?.value || '').toLowerCase();
+  const statusF = document.getElementById('statusFilter')?.value || '';
+  const payF = document.getElementById('paymentFilter')?.value || '';
+
+  const filtered = orders.filter(o => {
+    const matchSearch = !search || [o.ref,o.customer,o.email,o.phone].join(' ').toLowerCase().includes(search);
+    const matchStatus = !statusF || o.status === statusF;
+    const matchPay = !payF || o.payment === payF;
+    return matchSearch && matchStatus && matchPay;
+  });
+
+  const tbody = document.getElementById('ordersTableBody');
+  tbody.innerHTML = filtered.length ? filtered.map((o, idx) => `
+    <tr>
+      <td><span class="mono">${o.ref}</span></td>
+      <td style="font-size:0.78rem;color:var(--text-muted)">${o.date}</td>
+      <td>${o.customer}<br><span style="font-size:0.75rem;color:var(--text-muted)">${o.email||''}</span></td>
+      <td style="font-size:0.82rem">${o.phone||'—'}</td>
+      <td style="font-size:0.78rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.items||'—'}</td>
+      <td style="color:var(--wind);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px">LKR ${(o.total||0).toLocaleString()}</td>
+      <td style="font-size:0.78rem">${o.payment||'—'}</td>
+      <td>
+        <select class="status-select" onchange="updateStatus('${o.ref}',this.value)">
+          ${['Pending','Processing','Shipped','Delivered','Cancelled'].map(s => `<option ${o.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="icon-btn" onclick="viewOrder('${o.ref}')" title="View">👁</button>
+          <button class="icon-btn del" onclick="deleteOrder('${o.ref}')" title="Delete">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📭</div><p>No orders found</p></div></td></tr>`;
+}
+
+// ====== SPREADSHEET ======
+function renderSpreadsheet() {
+  const orders = getOrders();
+  const tbody = document.getElementById('spreadsheetBody');
+  tbody.innerHTML = orders.length ? orders.map((o, i) => `
+    <tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td><span class="mono">${o.ref}</span></td>
+      <td style="font-size:0.78rem;white-space:nowrap">${o.date}</td>
+      <td>${o.customer}</td>
+      <td style="font-size:0.78rem">${o.email||'—'}</td>
+      <td>${o.phone||'—'}</td>
+      <td style="font-size:0.78rem;max-width:140px">${o.address||'—'}</td>
+      <td style="font-size:0.78rem;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.items||'—'}</td>
+      <td>LKR ${(o.subtotal||0).toLocaleString()}</td>
+      <td style="color:var(--green)">${o.discount>0?'-LKR '+o.discount.toLocaleString():'—'}</td>
+      <td>LKR 300</td>
+      <td style="color:var(--wind);font-weight:700">LKR ${(o.total||0).toLocaleString()}</td>
+      <td>${o.coupon||'None'}</td>
+      <td>${o.payment||'—'}</td>
+      <td><span class="status-badge status-${o.status}">${o.status}</span></td>
+    </tr>
+  `).join('') : `<tr><td colspan="15"><div class="empty-state"><div class="empty-icon">📋</div><p>No orders in spreadsheet</p></div></td></tr>`;
+}
+
+// ====== REVIEWS ======
+function renderReviewsTable() {
+  const reviews = getReviews();
+  const tbody = document.getElementById('reviewsTableBody');
+  tbody.innerHTML = reviews.length ? reviews.map((r, i) => `
+    <tr>
+      <td>${r.name}</td>
+      <td><span style="color:var(--accent)">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span> ${r.rating}/5</td>
+      <td style="max-width:250px;font-size:0.82rem;color:var(--text-muted)">${r.text}</td>
+      <td style="font-size:0.78rem;color:var(--text-muted)">${r.date}</td>
+      <td><button class="icon-btn del" onclick="deleteReview(${i})">🗑</button></td>
+    </tr>
+  `).join('') : `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">⭐</div><p>No reviews yet</p></div></td></tr>`;
+}
+
+// ====== ACTIONS ======
+function updateStatus(ref, status) {
+  const orders = getOrders();
+  const o = orders.find(o => o.ref === ref);
+  if (o) { o.status = status; saveOrders(orders); }
+  showToast(`Order ${ref} → ${status}`);
+  renderAll();
+}
+
+function viewOrder(ref) {
+  const o = getOrders().find(o => o.ref === ref);
+  if (!o) return;
+  document.getElementById('detailContent').innerHTML = `
+    ${['ref','date','customer','email','phone','address','items','subtotal','discount','shipping','total','coupon','payment','status'].map(k => `
+      <div class="detail-row">
+        <span class="detail-label">${k.charAt(0).toUpperCase()+k.slice(1)}</span>
+        <span class="detail-value">${k==='total'||k==='subtotal'?'LKR '+(o[k]||0).toLocaleString() : k==='discount'?'LKR '+(o[k]||0).toLocaleString() : (o[k]||'—')}</span>
+      </div>
+    `).join('')}
+  `;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function deleteOrder(ref) {
+  if (!confirm('Delete order ' + ref + '?')) return;
+  saveOrders(getOrders().filter(o => o.ref !== ref));
+  showToast('Order deleted');
+  renderAll();
+}
+
+function clearOrders() {
+  if (!confirm('Clear ALL orders? This cannot be undone.')) return;
+  localStorage.removeItem('windyOrders');
+  showToast('All orders cleared');
+  renderAll();
+}
+
+function deleteReview(i) {
+  const reviews = getReviews();
+  reviews.splice(i, 1);
+  localStorage.setItem('windyReviews', JSON.stringify(reviews));
+  showToast('Review deleted');
+  renderReviewsTable();
+}
+
+function clearReviews() {
+  if (!confirm('Clear all reviews?')) return;
+  localStorage.removeItem('windyReviews');
+  showToast('Reviews cleared');
+  renderReviewsTable();
+}
+
+function exportCSV() {
+  const orders = getOrders();
+  if (!orders.length) { showToast('No orders to export'); return; }
+  const headers = ['Ref','Date','Customer','Email','Phone','Address','Items','Subtotal','Discount','Shipping','Total','Coupon','Payment','Status'];
+  const rows = orders.map(o => [
+    o.ref, o.date, o.customer, o.email, o.phone, o.address,
+    '"' + (o.items||'').replace(/"/g,"'") + '"',
+    o.subtotal, o.discount, 300, o.total, o.coupon, o.payment, o.status
+  ]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'windy-orders-' + Date.now() + '.csv';
+  a.click();
+  showToast('CSV exported!');
+}
+
+function renderAll() {
+  renderDashboard();
+  renderOrdersTable();
+  renderSpreadsheet();
+  renderReviewsTable();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+renderAll();
+setInterval(renderAll, 5000); // auto-refresh every 5s
+</script>
+</body>
+</html>
